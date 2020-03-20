@@ -53,9 +53,7 @@ public class BaseValueContainer implements RxBleValueContainer {
             } else {
                 return clientValueProvider.getValue(client);
             }
-        });
-    }
-
+        })
     @Override
     public Completable setValue(@NonNull RxBleClient client, @NonNull RxBleValue value) {
         return Completable.defer(() -> {
