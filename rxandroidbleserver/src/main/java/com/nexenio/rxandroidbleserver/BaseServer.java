@@ -164,7 +164,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
                             .build();
 
                     AdvertiseData data = new AdvertiseData.Builder()
-                            .setIncludeDeviceName(false)
+                            .setIncludeDeviceName(true)
                             .setIncludeTxPowerLevel(false)
                             .addServiceUuid(new ParcelUuid(uuid))
                             .build();

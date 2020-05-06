@@ -20,11 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
-
-import timber.log.Timber;
-
 import com.tbruyelle.rxpermissions3.RxPermissions;
 
+import timber.log.Timber;
 
 public class ExampleActivity extends AppCompatActivity {
 
