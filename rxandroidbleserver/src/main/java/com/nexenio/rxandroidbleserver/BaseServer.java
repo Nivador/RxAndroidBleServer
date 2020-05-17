@@ -133,24 +133,24 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
     }
 
     @Override
-    public Completable provideServicesAndAdvertise(@NonNull UUID uuid) {
+    public Completable provideServicesAndAdvertise(@NonNull UUID uuid1, @NonNull UUID uuid2) {
         return Completable.mergeArray(
                 provideServices().subscribeOn(Schedulers.io()),
-                advertise(uuid).subscribeOn(Schedulers.io())
+                advertise(uuid1, uuid2).subscribeOn(Schedulers.io())
         );
     }
 
     @Override
-    public Completable advertise(@NonNull UUID uuid) {
-        return startAdvertising(uuid)
+    public Completable advertise(@NonNull UUID uuid1, @NonNull UUID uuid2) {
+        return startAdvertising(uuid1, uuid2)
                 .timeout(ADVERTISING_START_TIMEOUT, TimeUnit.MILLISECONDS)
                 .flatMapCompletable(disposeAction -> Completable.never()
                         .doOnDispose(disposeAction))
-                .doOnSubscribe(disposable -> Timber.i("Starting to advertise service: %s", uuid))
+                .doOnSubscribe(disposable -> Timber.i("Starting to advertise services: %s %s", uuid1, uuid2))
                 .doFinally(() -> Timber.i("Service advertising stopped"));
     }
 
-    private Single<Action> startAdvertising(@NonNull UUID uuid) {
+    private Single<Action> startAdvertising(@NonNull UUID uuid1, @NonNull UUID uuid2) {
         return getBluetoothAdvertiser()
                 .flatMap(advertiser -> Single.create(emitter -> {
 
@@ -166,7 +166,8 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
                     AdvertiseData data = new AdvertiseData.Builder()
                             .setIncludeDeviceName(true)
                             .setIncludeTxPowerLevel(false)
-                            .addServiceUuid(new ParcelUuid(uuid))
+                            .addServiceUuid(new ParcelUuid(uuid1))
+                            .addServiceUuid(new ParcelUuid(uuid2))
                             .build();
 
                     AdvertiseCallback callback = createAdvertisingCallback(advertiser, emitter);
