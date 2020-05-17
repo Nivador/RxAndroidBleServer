@@ -168,6 +168,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
                             .setIncludeTxPowerLevel(false)
                             .addServiceUuid(new ParcelUuid(uuid1))
                             .addServiceUuid(new ParcelUuid(uuid2))
+                            .addServiceData(new ParcelUuid(uuid1), new byte[] {(byte)0xC0})
                             .build();
 
                     AdvertiseCallback callback = createAdvertisingCallback(advertiser, emitter);
