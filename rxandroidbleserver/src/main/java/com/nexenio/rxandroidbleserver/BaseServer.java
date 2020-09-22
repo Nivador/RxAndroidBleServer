@@ -286,6 +286,11 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
     }
 
     @Override
+    public PublishSubject<Integer> observerClientMtu() {
+        return clientMtuChangedPublisher;
+    }
+
+    @Override
     public Single<RxBleClient> getClient(@NonNull BluetoothDevice bluetoothDevice) {
         return Observable.defer(() -> Observable.fromIterable(getClients()))
                 .filter(client -> client.getBluetoothDevice().equals(bluetoothDevice))

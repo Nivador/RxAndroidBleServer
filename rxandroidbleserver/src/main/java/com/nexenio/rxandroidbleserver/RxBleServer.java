@@ -39,4 +39,6 @@ public interface RxBleServer {
 
     Observable<RxBleClient> observerClientNotifications();
 
+    Observable<Integer> observerClientMtu();
+
 }
