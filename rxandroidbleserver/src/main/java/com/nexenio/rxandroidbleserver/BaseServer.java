@@ -72,6 +72,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
     private final PublishSubject<RxBleServerRequest> requestPublisher;
     private final PublishSubject<RxBleServerResponse> responsePublisher;
     private final PublishSubject<RxBleClient> clientNotifiedPublisher;
+    private final PublishSubject<Integer> clientMtuChangedPublisher;
 
     public BaseServer(Context context) {
         this.context = context;
@@ -81,6 +82,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
         requestPublisher = PublishSubject.create();
         responsePublisher = PublishSubject.create();
         clientNotifiedPublisher = PublishSubject.create();
+        clientMtuChangedPublisher = PublishSubject.create();
 
         requestPublisher.flatMapMaybe(this::createResponse)
                 .subscribe(responsePublisher);
@@ -154,7 +156,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
         return getBluetoothAdvertiser()
                 .flatMap(advertiser -> Single.create(emitter -> {
 
-                    // TODO: 1/25/2020 make settings adjustable
+                    // TODO: 1/25/2020 make settings adjustaHble
 
                     AdvertiseSettings settings = new AdvertiseSettings.Builder()
                             .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
@@ -392,6 +394,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
             callback.getDescriptorReadRequestPublisher().subscribe(requestPublisher);
             callback.getDescriptorWriteRequestPublisher().subscribe(requestPublisher);
             callback.getClientNotifiedPublisher().subscribe(clientNotifiedPublisher);
+            callback.getClientMtuChangedPublisher().subscribe(clientMtuChangedPublisher);
         });
     }
 

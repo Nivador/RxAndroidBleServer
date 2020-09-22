@@ -27,4 +27,6 @@ public interface RxBleServerCallback {
 
     PublishSubject<RxBleClient> getClientNotifiedPublisher();
 
+    PublishSubject<Integer> getClientMtuChangedPublisher();
+
 }

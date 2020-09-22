@@ -174,6 +174,11 @@ public class RxBleServerCallbackMediator {
             public void onMtuChanged(BluetoothDevice device, int mtu) {
                 Timber.v("onMtuChanged() called with: device = [%s], mtu = [%s]", device, mtu);
                 super.onMtuChanged(device, mtu);
+                callbackDisposable.add(getClient(device)
+                        .subscribe(
+                                client -> serverCallback.getClientMtuChangedPublisher().onNext(mtu),
+                                RxBleServerCallbackMediator.this::handleCallbackError
+                        ));
             }
 
             @Override
