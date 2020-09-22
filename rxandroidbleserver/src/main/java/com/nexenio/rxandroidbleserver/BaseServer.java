@@ -73,6 +73,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
     private final PublishSubject<RxBleServerRequest> requestPublisher;
     private final PublishSubject<RxBleServerResponse> responsePublisher;
     private final PublishSubject<RxBleClient> clientNotifiedPublisher;
+    private final PublishSubject<Integer> clientMtuChangedPublisher;
 
     public BaseServer(Context context) {
         this.context = context;
@@ -82,6 +83,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
         requestPublisher = PublishSubject.create();
         responsePublisher = PublishSubject.create();
         clientNotifiedPublisher = PublishSubject.create();
+        clientMtuChangedPublisher = PublishSubject.create();
 
         requestPublisher.flatMapMaybe(this::createResponse)
                 .subscribe(responsePublisher);
@@ -134,28 +136,28 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
     }
 
     @Override
-    public Completable provideServicesAndAdvertise(@NonNull UUID uuid) {
+    public Completable provideServicesAndAdvertise(@NonNull UUID uuid1, @NonNull UUID uuid2) {
         return Completable.mergeArray(
                 provideServices(),
-                advertise(uuid)
+                advertise(uuid1, uuid2)
         );
     }
 
     @Override
-    public Completable advertise(@NonNull UUID uuid) {
-        return startAdvertising(uuid)
+    public Completable advertise(@NonNull UUID uuid1, @NonNull UUID uuid2) {
+        return startAdvertising(uuid1, uuid2)
                 .timeout(ADVERTISING_START_TIMEOUT, TimeUnit.MILLISECONDS)
                 .flatMapCompletable(disposeAction -> Completable.never()
                         .doOnDispose(disposeAction))
-                .doOnSubscribe(disposable -> Timber.i("Starting to advertise service: %s", uuid))
+                .doOnSubscribe(disposable -> Timber.i("Starting to advertise services: %s %s", uuid1, uuid2))
                 .doFinally(() -> Timber.i("Service advertising stopped"));
     }
 
-    private Single<Action> startAdvertising(@NonNull UUID uuid) {
+    private Single<Action> startAdvertising(@NonNull UUID uuid1, @NonNull UUID uuid2) {
         return getBluetoothAdvertiser()
                 .flatMap(advertiser -> Single.create(emitter -> {
 
-                    // TODO: 1/25/2020 make settings adjustable
+                    // TODO: 1/25/2020 make settings adjustaHble
 
                     AdvertiseSettings settings = new AdvertiseSettings.Builder()
                             .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
@@ -165,9 +167,11 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
                             .build();
 
                     AdvertiseData data = new AdvertiseData.Builder()
-                            .setIncludeDeviceName(false)
+                            .setIncludeDeviceName(true)
                             .setIncludeTxPowerLevel(false)
-                            .addServiceUuid(new ParcelUuid(uuid))
+                            .addServiceUuid(new ParcelUuid(uuid1))
+                            .addServiceUuid(new ParcelUuid(uuid2))
+                            .addServiceData(new ParcelUuid(uuid1), new byte[] {(byte)0xC0})
                             .build();
 
                     AdvertiseCallback callback = createAdvertisingCallback(advertiser, emitter);
@@ -391,6 +395,7 @@ public class BaseServer implements RxBleServer, RxBleServerMapper {
             callback.getDescriptorReadRequestPublisher().subscribe(requestPublisher);
             callback.getDescriptorWriteRequestPublisher().subscribe(requestPublisher);
             callback.getClientNotifiedPublisher().subscribe(clientNotifiedPublisher);
+            callback.getClientMtuChangedPublisher().subscribe(clientMtuChangedPublisher);
         });
     }
 
